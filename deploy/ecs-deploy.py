@@ -17,7 +17,7 @@ container={'name':name,'image':image,'essential':True,'portMappings':[{'containe
  'healthCheck':{'command':['CMD-SHELL',f'wget -q -O /dev/null http://127.0.0.1:{port}/'+('actuator/health' if service=='backend' else 'health')+' || exit 1'],'interval':15,'timeout':5,'retries':5,'startPeriod':90 if service=='backend' else 15}}
 if service=='backend':
     container['environment']=[{'name':'SPRING_PROFILES_ACTIVE','value':'mariadb'},
-      {'name':'DB_URL','value':'jdbc:mariadb://'+values['DBEndpoint']+':3306/db_biztrips'},
+      {'name':'DB_URL','value':'jdbc:mariadb://'+values['DBEndpoint']+':3306/db_biztrips?sslMode=verify-full&serverSslCert=/app/rds-ca-bundle.pem'},
       {'name':'DB_USER','value':'biztrips'}]
     container['secrets']=[{'name':'DB_PASSWORD','valueFrom':values['DBSecretArn']+':password::'}]
 else:
@@ -42,9 +42,11 @@ else:
     with open('/tmp/m324-service-'+service+'.json','w') as f: json.dump(config,f)
     aws('ecs','create-service','--cli-input-json','file:///tmp/m324-service-'+service+'.json')
 subprocess.run(['aws','ecs','wait','services-stable','--cluster',cluster,'--services',name,'--region',region],check=True)
+subprocess.run(['aws','elbv2','wait','target-in-service','--target-group-arn',values['BackendTarget' if service=='backend' else 'FrontendTarget'],'--region',region],check=True)
 # Seed the demo database once before starting the second backend task.
 aws('ecs','update-service','--cluster',cluster,'--service',name,'--desired-count','2')
 subprocess.run(['aws','ecs','wait','services-stable','--cluster',cluster,'--services',name,'--region',region],check=True)
+subprocess.run(['aws','elbv2','wait','target-in-service','--target-group-arn',values['BackendTarget' if service=='backend' else 'FrontendTarget'],'--region',region],check=True)
 deployed=aws('ecs','describe-services','--cluster',cluster,'--services',name)['services'][0]
 if deployed['taskDefinition']!=arn or deployed['runningCount']!=deployed['desiredCount']:
     raise SystemExit('ECS rolled back or failed to reach the requested deployment')
