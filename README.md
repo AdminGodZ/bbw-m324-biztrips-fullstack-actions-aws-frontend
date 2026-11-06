@@ -22,6 +22,14 @@ Eigene Test- und Build-Jobs mit npm-Cache. Der Build wird als Artefakt gespeiche
 
 Die Secrets und Freischaltvariablen entsprechen der [Backend-Konfiguration](https://github.com/AdminGodZ/bbw-m324-biztrips-fullstack-actions-aws-backend). EC2-Secrets liegen im Environment `production`; AWS-Lab-Zugang und Docker-Hub-Zugang liegen als verschlüsselte Repository-Secrets vor. `AWS_CREDENTIALS` enthält den vollständigen `[default]`-Block aus AWS Details und muss nach Session-Ablauf erneuert werden.
 
+## Abgenommene Anwendung
+
+EC2: http://13.220.4.150
+
+ECS: http://bbw-m324-Alb-BD6YtmTDd85r-713603972.us-east-1.elb.amazonaws.com
+
+Der [abgenommene Run](https://github.com/AdminGodZ/bbw-m324-biztrips-fullstack-actions-aws-frontend/actions/runs/42182874967) ist für Test, Build, EC2, Docker Hub und ECS erfolgreich. `task-definition.json` dokumentiert die registrierte Task-Konfiguration. Screenshots und der gemeinsame Nachweis sind im Backend-Repo verlinkt.
+
 ## Nachweis
 
 Der gemeinsame [Nachweis](https://github.com/AdminGodZ/bbw-m324-biztrips-fullstack-actions-aws-backend/blob/main/docs/NACHWEIS.md) trennt lokale Tests, CI und Live-Deployments. Die ursprüngliche README ist unter `docs/UPSTREAM-README.md` erhalten; die Aufgaben stehen unter `docs/exercises`.
