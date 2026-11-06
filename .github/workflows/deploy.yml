@@ -1,0 +1,163 @@
+name: Test, build and deploy
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run lint
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_API_BASE_URL: /
+      - uses: actions/upload-artifact@v4
+        with:
+          name: application
+          path: dist
+  deploy-ec2:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.ENABLE_EC2 == 'true'
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      EC2_SECURITY_GROUP: ${{ vars.EC2_SECURITY_GROUP }}
+      AWS_REGION: us-east-1
+      EC2_HOST: ${{ secrets.EC2_HOST }}
+      EC2_USER: ${{ secrets.EC2_USER }}
+      EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+      EC2_KNOWN_HOSTS: ${{ secrets.EC2_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Load temporary Learner Lab credentials
+        if: vars.AWS_ROLE_ARN == ''
+        env:
+          LAB_CREDENTIALS: ${{ secrets.AWS_CREDENTIALS }}
+        run: |
+          python3 - <<'PYTHON'
+          import configparser, os
+          config = configparser.ConfigParser(interpolation=None)
+          config.read_string(os.environ['LAB_CREDENTIALS'])
+          with open(os.environ['GITHUB_ENV'], 'a') as env:
+              for key in ('aws_access_key_id', 'aws_secret_access_key', 'aws_session_token'):
+                  value = config['default'][key].strip()
+                  if not value or '\n' in value or '\r' in value:
+                      raise SystemExit('Missing or malformed Learner Lab credential')
+                  env.write(key.upper() + '=' + value + '\n')
+          PYTHON
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+      - uses: actions/download-artifact@v4
+        with:
+          name: application
+          path: dist
+      - run: bash deploy/ec2-deploy.sh
+  docker:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.ENABLE_DOCKERHUB == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/bbw-m324-biztrips-refcard03-04-frontend:prod01
+            ${{ secrets.DOCKERHUB_USERNAME }}/bbw-m324-biztrips-refcard03-04-frontend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/bbw-m324-biztrips-refcard03-04-frontend:${{ github.sha }}
+  deploy-ecs:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.ENABLE_ECS == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AWS_REGION: us-east-1
+      M324_STACK: bbw-m324-biztrips-refcard03-04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Load temporary Learner Lab credentials
+        if: vars.AWS_ROLE_ARN == ''
+        env:
+          LAB_CREDENTIALS: ${{ secrets.AWS_CREDENTIALS }}
+        run: |
+          python3 - <<'PYTHON'
+          import configparser, os
+          config = configparser.ConfigParser(interpolation=None)
+          config.read_string(os.environ['LAB_CREDENTIALS'])
+          with open(os.environ['GITHUB_ENV'], 'a') as env:
+              for key in ('aws_access_key_id', 'aws_secret_access_key', 'aws_session_token'):
+                  value = config['default'][key].strip()
+                  if not value or '\n' in value or '\r' in value:
+                      raise SystemExit('Missing or malformed Learner Lab credential')
+                  env.write(key.upper() + '=' + value + '\n')
+          PYTHON
+      - uses: aws-actions/configure-aws-credentials@v4
+        if: vars.AWS_ROLE_ARN != ''
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+      - uses: aws-actions/configure-aws-credentials@v4
+        if: vars.AWS_ROLE_ARN == ''
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: ${{ steps.ecr.outputs.registry }}/bbw-m324-biztrips-refcard03-04-frontend:${{ github.sha }}
+      - name: Roll out and verify frontend service
+        env:
+          IMAGE: ${{ steps.ecr.outputs.registry }}/bbw-m324-biztrips-refcard03-04-frontend:${{ github.sha }}
+        run: python3 deploy/ecs-deploy.py frontend "$IMAGE"

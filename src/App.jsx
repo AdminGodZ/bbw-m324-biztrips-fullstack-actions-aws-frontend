@@ -9,7 +9,7 @@ export default function App() {
     return (
         <div className="container">
             <header className="container h3">
-                RefCard 03 - Business Trips - Frontend Development with React and Java Spring
+                RefCard 03–04 - Business Trips - Frontend Development with React and Java Spring | Tim Held
 
             </header>
             <Wishlist/>

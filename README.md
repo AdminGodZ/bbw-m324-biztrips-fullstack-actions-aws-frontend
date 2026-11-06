@@ -1,40 +1,27 @@
-# React + Vite
+# Business Trips · Frontend · RefCard03–04
 
-## Getting the starting point
+Tim Held, M324. Eigenes React/Vite-Repository aus dem Unterrichtsstarter `v1-start`.
 
-**Option A — fresh clone at the starting point**
+## Start und Tests
 
 ```bash
-git clone --branch v1-start https://github.com/bbwlc/refcard-03-fe-react-vite.git
-cd refcard-03-fe-react-vite
-npm install
+npm ci
+npm test
+npm run lint
+npm run build
 npm run dev
 ```
 
-**Option B — you already have the repo cloned**
+Vite leitet `/v1` in der Entwicklung auf `http://localhost:8080` weiter. Die Produktions-App verwendet denselben Origin wie die API. Im nginx-Container kann `BACKEND_ORIGIN` beim Start gesetzt werden, standardmässig `http://backend:8080`.
 
-```bash
-git fetch --tags
-git checkout v1-start
-npm install
-npm run dev
-```
+Das gemeinsame lokale Setup liegt im Backend-Repo. Beide Repos nebeneinander als `backend` und `frontend` auschecken und dort `docker compose up -d --build --wait` ausführen. Danach ist die App unter http://localhost:3000 erreichbar.
 
-This puts you in a "detached HEAD" state at the tag — fine for exploring, but if you'll commit your own work, branch off it first:
+## Pipeline
 
-```bash
-git checkout -b my-work v1-start
-```
+Eigene Test- und Build-Jobs mit npm-Cache. Der Build wird als Artefakt gespeichert. Auf `main` folgen nach Einrichtung optional EC2-Transfer, Docker-Hub-Push und ECS-Deployment. Images werden mit `prod01`, `latest` und vollständigem Commit-SHA veröffentlicht. Docker-Publishing baut für amd64 und arm64; ECS verwendet amd64.
 
-> The app calls a backend at `http://localhost:8080/v1/trips` (see the `RefCard-03-be-SpringBootBusinessTrips` project), so make sure that's running too for the trip list / wishlist to show real data.
+Die Secrets und Freischaltvariablen entsprechen der [Backend-Konfiguration](https://github.com/AdminGodZ/bbw-m324-biztrips-fullstack-actions-aws-backend). EC2-Secrets liegen im Environment `production`; AWS-Lab-Zugang und Docker-Hub-Zugang liegen als verschlüsselte Repository-Secrets vor. `AWS_CREDENTIALS` enthält den vollständigen `[default]`-Block aus AWS Details und muss nach Session-Ablauf erneuert werden.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Nachweis
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Der gemeinsame [Nachweis](https://github.com/AdminGodZ/bbw-m324-biztrips-fullstack-actions-aws-backend/blob/main/docs/NACHWEIS.md) trennt lokale Tests, CI und Live-Deployments. Die ursprüngliche README ist unter `docs/UPSTREAM-README.md` erhalten; die Aufgaben stehen unter `docs/exercises`.
