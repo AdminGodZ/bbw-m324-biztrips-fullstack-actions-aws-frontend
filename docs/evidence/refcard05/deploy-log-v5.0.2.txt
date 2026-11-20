@@ -1,0 +1,43 @@
+AWS session OK: arn:aws:sts::191612072733:assumed-role/voclabs/***
+      "image": "191612072733.dkr.ecr.us-east-1.amazonaws.com/bbw-m324-refcard05-frontend:5.0.2",
+Updating service biztrips-frontend -> arn:aws:ecs:us-east-1:191612072733:task-definition/bbw-m324-refcard05-frontend:4
+  [ecs] 2026-11-20T07:38:04.597000+00:00 (service biztrips-frontend, taskSet ecs-svc/3435538606860756057) has begun draining connections on 1 tasks.
+  [ecs] 2026-11-20T07:38:55.925000+00:00 (service biztrips-frontend) (deployment ecs-svc/6118437947154446695) deployment completed.
+  [ecs] 2026-11-20T07:38:55.926000+00:00 (service biztrips-frontend) has reached a steady state.
+  [ecs] 2026-11-20T07:47:13.658000+00:00 (service biztrips-frontend) has started 1 tasks: (task d70c4b3511e34780801747bf5d11bc9a).
+  [ecs] 2026-11-20T07:47:33.936000+00:00 (service biztrips-frontend) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:191612072733:targetgroup/refcard05-frontend/d6e8f5fff62ca561)
+  [ecs] 2026-11-20T07:47:53.034000+00:00 (service biztrips-frontend) has stopped 1 running tasks: (task 6dc85e06d56348bea8aa8f21d7cd6757).
+  [ecs] 2026-11-20T07:48:02.739000+00:00 (service biztrips-frontend) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:191612072733:targetgroup/refcard05-frontend/d6e8f5fff62ca561)
+  [ecs] 2026-11-20T07:48:02.746000+00:00 (service biztrips-frontend, taskSet ecs-svc/6118437947154446695) has begun draining connections on 1 tasks.
+  [ecs] 2026-11-20T07:49:04.533000+00:00 (service biztrips-frontend) (deployment ecs-svc/2335002800106700530) deployment completed.
+  [ecs] 2026-11-20T07:49:04.534000+00:00 (service biztrips-frontend) has reached a steady state.
+  rollout IN_PROGRESS: running 0/0, failed tasks 0
+  [ecs] 2026-11-20T08:00:14.266000+00:00 (service biztrips-frontend) has started 1 tasks: (task 27715a648fea4022bbb786dab57295a5).
+  rollout IN_PROGRESS: running 0/1, failed tasks 0
+  rollout IN_PROGRESS: running 0/1, failed tasks 0
+  rollout IN_PROGRESS: running 0/1, failed tasks 0
+  [ecs] 2026-11-20T08:01:04.490000+00:00 (service biztrips-frontend) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:191612072733:targetgroup/refcard05-frontend/d6e8f5fff62ca561)
+  rollout IN_PROGRESS: running 0/1, failed tasks 0
+  rollout IN_PROGRESS: running 1/1, failed tasks 0
+  [ecs] 2026-11-20T08:01:25.001000+00:00 (service biztrips-frontend) has stopped 1 running tasks: (task d70c4b3511e34780801747bf5d11bc9a).
+  [ecs] 2026-11-20T08:01:34.706000+00:00 (service biztrips-frontend) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:191612072733:targetgroup/refcard05-frontend/d6e8f5fff62ca561)
+  [ecs] 2026-11-20T08:01:34.710000+00:00 (service biztrips-frontend, taskSet ecs-svc/2335002800106700530) has begun draining connections on 1 tasks.
+  rollout IN_PROGRESS: running 1/1, failed tasks 0
+  rollout IN_PROGRESS: running 1/1, failed tasks 0
+  rollout IN_PROGRESS: running 1/1, failed tasks 0
+  rollout IN_PROGRESS: running 1/1, failed tasks 0
+  [ecs] 2026-11-20T08:02:35.982000+00:00 (service biztrips-frontend) (deployment ecs-svc/6005979361243035233) deployment completed.
+  [ecs] 2026-11-20T08:02:35.983000+00:00 (service biztrips-frontend) has reached a steady state.
+  rollout COMPLETED: running 1/1, failed tasks 0
+  verify OK (1/5): http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com/version.json -> {"name":"biztrips-frontend","version":"5.0.2","commit":"614972754d972df3c67a95a9f3c7616816331e9d","apiBaseUrl":"http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com"} | http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com/health -> ok
+  verify OK (2/5): http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com/version.json -> {"name":"biztrips-frontend","version":"5.0.2","commit":"614972754d972df3c67a95a9f3c7616816331e9d","apiBaseUrl":"http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com"} | http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com/health -> ok
+  verify OK (3/5): http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com/version.json -> {"name":"biztrips-frontend","version":"5.0.2","commit":"614972754d972df3c67a95a9f3c7616816331e9d","apiBaseUrl":"http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com"} | http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com/health -> ok
+  verify OK (4/5): http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com/version.json -> {"name":"biztrips-frontend","version":"5.0.2","commit":"614972754d972df3c67a95a9f3c7616816331e9d","apiBaseUrl":"http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com"} | http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com/health -> ok
+  verify OK (5/5): http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com/version.json -> {"name":"biztrips-frontend","version":"5.0.2","commit":"614972754d972df3c67a95a9f3c7616816331e9d","apiBaseUrl":"http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com"} | http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com/health -> ok
+  "service": "biztrips-frontend",
+  "cluster": "bbw-m324-refcard05",
+  "image": "191612072733.dkr.ecr.us-east-1.amazonaws.com/bbw-m324-refcard05-frontend:5.0.2",
+  "version": "5.0.2",
+  "taskDefinition": "bbw-m324-refcard05-frontend:4",
+  "runningCount": 1,
+  "url": "http://bbw-m324-refcard05-1247198490.us-east-1.elb.amazonaws.com",
