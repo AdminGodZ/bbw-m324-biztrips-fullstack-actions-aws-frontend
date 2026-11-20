@@ -31,6 +31,7 @@ export function WishlistProvider(props) {
 
 // make our own customHook yuhui to easily consume and protect the context,
 // displays error messages
+// eslint-disable-next-line react-refresh/only-export-components -- hook belongs to its provider
 export function useWishlist() {
     // useContext
     const context = useContext(WishlistContext)

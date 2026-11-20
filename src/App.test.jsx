@@ -15,7 +15,7 @@ test("renders without crashing", () => {
       <App/>
     </WishlistProvider>
   );
-  expect(screen.getByText(/Business Trips - Frontend Development/i)).toBeInTheDocument();
+  expect(screen.getByText(/RefCard 05 - Business Trips - Full Stack on AWS/i)).toBeInTheDocument();
 });
 
 test("adds a fetched trip to the wishlist and removes it", async () => {
