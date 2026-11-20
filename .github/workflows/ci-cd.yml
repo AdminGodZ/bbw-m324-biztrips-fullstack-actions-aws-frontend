@@ -177,7 +177,20 @@ jobs:
       url: ${{ steps.deploy.outputs.url }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Skip if this commit is a release (the tag pipeline deploys it)
+        id: guard
+        run: |
+          # main push and release tag on the same commit run in parallel; the deploy jobs are queued.
+          # Without this guard the untagged main build could replace the release that was just deployed.
+          git fetch --tags --force --quiet
+          if [[ "$GITHUB_REF_TYPE" != "tag" ]] && release=$(git describe --exact-match --tags --match 'v[0-9]*.[0-9]*.[0-9]*' HEAD 2>/dev/null); then
+            echo "::notice title=Deployment skipped::$GITHUB_SHA is release $release - deployed by the $release pipeline."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
       - uses: ./.github/actions/aws-learner-lab
+        if: steps.guard.outputs.skip != 'true'
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -185,4 +198,5 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - name: Register task definition, roll out service, verify version
         id: deploy
+        if: steps.guard.outputs.skip != 'true'
         run: python3 deploy/ecs-deploy.py frontend "${{ needs.image.outputs.image }}" "${{ needs.version.outputs.version }}"
