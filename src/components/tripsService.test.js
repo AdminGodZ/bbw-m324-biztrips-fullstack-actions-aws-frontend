@@ -15,3 +15,9 @@ test('propagates a backend failure', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response));
   await expect(getBusinessTrips()).rejects.toBe(response);
 });
+
+test('builds photo URLs relative to the backend base URL', async () => {
+  const {employeePhotoUrl} = await import('./tripsService');
+  expect(employeePhotoUrl(3)).toBe('/v1/employees/3/photo');
+  expect(employeePhotoUrl(3, 'abc')).toBe('/v1/employees/3/photo?v=abc');
+});
