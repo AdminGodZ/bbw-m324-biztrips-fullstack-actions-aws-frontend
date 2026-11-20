@@ -1,0 +1,42 @@
+name: AWS Learner Lab credentials
+description: >-
+  Checks the temporary AWS Academy Learner Lab session credentials (GitHub secrets) and configures
+  them for the following steps. In the Learner Lab, OIDC/role-to-assume is not possible
+  (iam:CreateRole is denied), so the session keys are used directly.
+inputs:
+  aws-access-key-id: {required: true, description: secrets.AWS_ACCESS_KEY_ID}
+  aws-secret-access-key: {required: true, description: secrets.AWS_SECRET_ACCESS_KEY}
+  aws-session-token: {required: true, description: secrets.AWS_SESSION_TOKEN}
+  aws-region: {required: false, default: us-east-1, description: AWS region}
+runs:
+  using: composite
+  steps:
+    - name: Check Learner Lab session
+      shell: bash
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+        AWS_SESSION_TOKEN: ${{ inputs.aws-session-token }}
+        AWS_REGION: ${{ inputs.aws-region }}
+      run: |
+        missing=""
+        for name in AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN; do
+          [ -n "${!name}" ] || missing="$missing $name"
+        done
+        if [ -n "$missing" ]; then
+          echo "::error title=GitHub secrets missing::Not set:$missing. Learner Lab -> AWS Details -> AWS CLI, then Settings -> Secrets and variables -> Actions (see docs/REFCARD05.md)."
+          exit 1
+        fi
+        if ! identity=$(aws sts get-caller-identity --query Arn --output text 2>&1); then
+          echo "::error title=Learner Lab session expired or invalid::$identity"
+          echo "::error::Start the lab (Start Lab), copy the new values from AWS Details and update the three GitHub secrets, then re-run this job (docs/REFCARD05.md -> Secrets erneuern)."
+          exit 1
+        fi
+        echo "AWS session OK: ${identity%%/user*}/***"
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-session-token: ${{ inputs.aws-session-token }}
+        aws-region: ${{ inputs.aws-region }}
